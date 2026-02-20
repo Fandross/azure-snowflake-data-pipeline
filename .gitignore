@@ -1,0 +1,6 @@
+# Ignore the data directory, which may contain large files or sensitive information
+data/
+__pycache__/
+.env
+.venv/
+venv/clea
