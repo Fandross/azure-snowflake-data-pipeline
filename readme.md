@@ -10,6 +10,7 @@ Imagine uma consultoria que precisa analisar o comportamento de usuários e a ev
 * **Ingestão Automatizada:** Desenvolver scripts em Python para orquestrar o upload de dados para a nuvem.
 * **Arquitetura Medalhão:** Organizar os dados em camadas (Bronze/Staging, Silver/Cleaned, Gold/Star Schema).
 * **Processamento de Semi-estruturados:** Utilizar o tipo `VARIANT` do Snowflake para tratar dados aninhados sem perda de performance.
+* **Processamento de 7 Milhões de Registros:** Demonstração de capacidade técnica para lidar com Big Data (5.3 GB de reviews).
 * **Modelagem Dimensional:** Implementar um **Star Schema** (Fatos e Dimensões) otimizado para consultas analíticas.
 * **Histórico de Dados:** Gerenciar mudanças de estado utilizando **Slowly Changing Dimensions (SCD)**.
 * **Idempotência e Automação:** Garantir que o pipeline possa ser reexecutado sem duplicidade e que novos dados sejam processados automaticamente.
@@ -22,12 +23,22 @@ Imagine uma consultoria que precisa analisar o comportamento de usuários e a ev
 * **Modelagem:** Metodologia Kimball (Star Schema)
 * **Ferramenta de Desenvolvimento:** VSCode no macOS
 
-## 4. Metodologia de Desenvolvimento e Custos
+## 4. Ingestão e Performance (Bronze Layer)
+A carga dos dados brutos foi realizada utilizando o comando `COPY INTO` do Snowflake, integrando o Azure Blob Storage como External Stage para uma ingestão de alto desempenho.
+
+| Dataset | Volume de Dados | Registros Carregados | Tempo de Processamento |
+| :--- | :--- | :--- | :--- |
+| **Business** | 118 MB | 150.346 | 11 segundos |
+| **Review** | 5.3 GB | 6.990.280 | 9 minutos   |
+
+*Os dados foram validados via consultas de agregação, confirmando uma média de 3.74 estrelas e registros datados de 2005 a 2022.*
+
+## 5. Metodologia de Desenvolvimento e Custos
 Para este projeto, optou-se por uma estratégia de **Sampling (Amostragem)** dos dados originais do Yelp:
 * **Dados Semiestruturados:** Carga integral dos arquivos Business, Review e User para permitir análise de Star Schema completa.
 * **Dados Não Estruturados:** Seleção manual de uma amostra representativa de imagens para demonstrar a capacidade de gerenciamento de binários via Snowflake Directory Tables, mantendo o projeto dentro da camada gratuita da Azure (Free Tier).
 
-## 5. Estrutura do Repositório
+## 6. Estrutura do Repositório
 ```text
 .
 ├── data/               # Arquivos locais (não versionados no Git)
@@ -38,7 +49,7 @@ Para este projeto, optou-se por uma estratégia de **Sampling (Amostragem)** dos
 └── README.md           # Documentação principal
 ```
 
-## 6. Decisões de Engenharia
+## 7. Decisões de Engenharia
 ### Camada Bronze no Cloud Storage
 
 A escolha de utilizar o **Azure Blob Storage** como camada inicial (Bronze) justifica-se pela necessidade de um **Data Lake** imutável. Isso garante a preservação dos dados originais e permite que o Snowflake utilize **External Stages** para uma ingestão escalável.
@@ -47,7 +58,7 @@ A escolha de utilizar o **Azure Blob Storage** como camada inicial (Bronze) just
 
 A utilização da edição Enterprise do Snowflake é estratégica, permitindo o uso de Time Travel estendido (até 90 dias) e Materialized Views, fundamentais para auditoria e performance em ambientes produtivos.
 
-## 7. Desafios de Dados Semiestruturados
+## 8. Desafios de Dados Semiestruturados
 O dataset do Yelp apresenta campos complexos e aninhados (ex: attributes e hours), que não seguem um esquema rígido.
 
 * **Estratégia:** Utilizaremos o tipo de dado `VARIANT` do Snowflake na camada **Bronze** (Schema-on-Read).
